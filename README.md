@@ -50,3 +50,36 @@ Sometimes we want to verify if a key exists or no, Redis has an operator for tha
 > EXISTS idontexist
  (integer) 0
 ``` 
+
+## STREAMS
+Redis streams the most complex type of Redis,despite the data structure itself being quite simple, is the fact that it implements additional, non mandatory features: a set of blocking operations allowing consumers to wait for new data added to a stream by producers, and in addition to that a concept called **Consumer Groups**.
+
+#### Streams basics
+Streams are an append only data structure, the fundamental write command, called **XADD**, appends a new entry into the specified stream
+```
+> XADD mystream * sensor-id 1234 temperature 19.8
+  1518951480106-0
+```
+
+It is possible to get the number of items inside a Stream just using the **XLEN** command:
+```
+> XLEN mystream
+ (integer) 1
+```
+
+To query the stream by range we are only required to specify two IDs
+``` 
+> XRANGE mystream - +
+```
+To query a stream in reversed order we write the command ***XREVRANGE***.
+
+Non-blocking form of **XREAD**. Note that the **COUNT** option is not mandatory, in fact the only mandatory option of the command is the **STREAMS** option, that specifies a list of keys together with the corresponding maximum ID already seen for each stream by the calling consumer, so that the command will provide the client only with messages with an ID greater than the one we specified.
+
+```
+> XREAD COUNT 2 STREAMS mystream 0
+```
+
+he interesting part is that we can turn **XREAD** into a _blocking command_ easily, by specifying the **BLOCK** argument:
+```
+> XREAD BLOCK 0 STREAMS mystream $
+```
